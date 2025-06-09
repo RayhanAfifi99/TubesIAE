@@ -14,6 +14,7 @@ class CreateOrdersTable extends Migration
             $table->string('product_name');
             $table->integer('quantity');
             $table->decimal('total_price', 12, 2);
+            $table->string('day'); // <-- kalau kamu mau langsung masukkan kolom day di awal pembuatan
             $table->timestamps();
         });
     }
