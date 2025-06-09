@@ -1,0 +1,51 @@
+services:
+  report_app:
+    build: .
+    container_name: report-service-app
+    volumes:
+      - ../reportservice:/var/www
+    networks:
+      - laravel-net
+    depends_on:
+      report_db:
+        condition: service_healthy
+    environment:
+      ORDER_SERVICE_URL: http://order_web
+
+  report_web:
+    image: nginx:stable-alpine
+    container_name: report-service-nginx
+    ports:
+      - "8004:80"
+    volumes:
+      - ../reportservice:/var/www
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - laravel-net
+    depends_on:
+      - report_app
+
+  report_db:
+    image: mysql:8
+    container_name: report-service-db
+    environment:
+      MYSQL_DATABASE: report_service_db
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - report_db_data:/var/lib/mysql
+    ports:
+      - "3310:3306"
+    networks:
+      - laravel-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+networks:
+  laravel-net:
+    external: true
+
+volumes:
+  report_db_data:

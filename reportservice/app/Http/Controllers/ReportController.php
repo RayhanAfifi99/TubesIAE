@@ -21,7 +21,8 @@ class ReportController extends Controller
             ], 400);
         }
 
-        $orderServiceUrl = env('ORDER_SERVICE_URL') . '/order';
+        $orderServiceUrl = env('ORDER_SERVICE_URL') . '/api/order';
+
         $response = Http::get($orderServiceUrl);
 
         if ($response->failed()) {

@@ -1,0 +1,49 @@
+services:
+  order_app:
+    build: .
+    container_name: order-service-app
+    volumes:
+      - ../orderservice:/var/www
+    networks:
+      - laravel-net
+    depends_on:
+      order_db:
+        condition: service_healthy
+
+  order_web:
+    image: nginx:stable-alpine
+    container_name: order-service-nginx
+    ports:
+      - "8003:80"
+    volumes:
+      - ../orderservice:/var/www
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - laravel-net
+    depends_on:
+      - order_app
+
+  order_db:
+    image: mysql:8
+    container_name: order-service-db
+    environment:
+      MYSQL_DATABASE: orderservice_db
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - order_db_data:/var/lib/mysql
+    ports:
+      - "3309:3306"
+    networks:
+      - laravel-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+networks:
+  laravel-net:
+    external: true
+
+volumes:
+  order_db_data:
