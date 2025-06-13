@@ -43,6 +43,21 @@ services:
       timeout: 10s
       retries: 5
 
+  phpmyadmin_report:
+    image: phpmyadmin/phpmyadmin
+    container_name: report-service-phpmyadmin
+    restart: always
+    ports:
+      - "8084:80"  # Akses phpMyAdmin di http://localhost:8084
+    environment:
+      PMA_HOST: report_db
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: rootpassword
+    depends_on:
+      - report_db
+    networks:
+      - laravel-net
+
 networks:
   laravel-net:
     external: true

@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  hasura:
+    image: hasura/graphql-engine:latest
+    restart: always
+    container_name: hasura-engine
+    ports:
+      - "8099:8080"
+    environment:
+      HASURA_GRAPHQL_DATABASE_URL: postgres://postgres:mysecretpassword@postgres-orderservice:5432/orderservice_db
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "true"
+      HASURA_GRAPHQL_DEV_MODE: "true"
+    networks:
+      - laravel-net
+
+networks:
+  laravel-net:
+    external: true

@@ -1,0 +1,27 @@
+scalar DateTime
+
+type Order {
+  id: ID!
+  user_name: String!
+  product_name: String!
+  quantity: Int!
+  total_price: Float!
+  day: String!
+  created_at: DateTime
+  updated_at: DateTime
+}
+
+type Query {
+  orders: [Order!]! @all
+  order(id: ID!): Order @find
+}
+
+type Mutation {
+  createOrder(
+    user_name: String!
+    product_name: String!
+    quantity: Int!
+    total_price: Float!
+    day: String!
+  ): Order @create
+}

@@ -7,15 +7,23 @@ use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
+use App\Jobs\PublishOrderCreated;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
 
     public function index()
     {
-        $order = Order::query()->get();
+        // $order = Order::query()->get();
 
-        return response()->json($order);
+        // return response()->json($order);
+        // return response()->json([
+        //     'message' => 'This endpoint is disabled for public access.'
+        // ], 403);
+        $orders = Order::all();
+
+        return response()->json($orders);
     }
     public function show($username, $productName)
     {
@@ -62,6 +70,7 @@ class OrderController extends Controller
         if ($productResponse->failed()) {
             return response()->json(['message' => 'Product not found'], 404);
         }
+
         $product = $productResponse->json();
         $totalPrice = $product['price'] * $validated['quantity'];
 
@@ -75,7 +84,6 @@ class OrderController extends Controller
             return response()->json(['message' => 'Stock tidak mencukupi'], 500);
         }
 
-        // Tambahkan pengisian field 'day'
         $day = Carbon::now()->format('l');
 
         $order = Order::create([
@@ -86,6 +94,25 @@ class OrderController extends Controller
             'day'          => $day
         ]);
 
-        return response()->json($order, 201);
+        $payload = [
+            'id' => $order->id,
+            'user_name' => $order->user_name,
+            'product_name' => $order->product_name,
+            'quantity' => $order->quantity,
+            'total_price' => $order->total_price,
+            'day' => $order->day
+        ];
+
+        // ✅ Log internal (tidak muncul di response)
+        Log::info('📦 Dispatching job to RabbitMQ', $payload);
+
+        // ✅ Async job dengan delay
+        dispatch(new PublishOrderCreated($payload))->delay(now()->addSeconds(10));
+
+        // ✅ Minimalist response
+        return response()->json([
+            'message' => 'Order has been queued for processing.'
+        ], 202); // 202 = async accepted
+
     }
 }

@@ -1,21 +1,3 @@
-# version: '3.8'
-# services:
-#   user-app:
-#     build: .
-#     container_name: user_service
-#     ports:
-#       - "8001:80"
-#     # environment:
-#     #   - RABBITMQ_HOST=rabbitmq
-#     networks:
-#       - micro_net
-#     volumes:
-#       - ./app:/var/www
-
-# networks:
-#   micro_net:
-#     external: true
-
 
 services:
   user_app:
@@ -59,6 +41,22 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+
+
+  phpmyadmin_user:
+    image: phpmyadmin/phpmyadmin
+    container_name: user-service-phpmyadmin
+    restart: always
+    ports:
+      - "8081:80"  # ⬅️ Bisa diakses di http://localhost:8081
+    environment:
+      PMA_HOST: user_db
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: rootpassword
+    depends_on:
+      - user_db
+    networks:
+      - laravel-net
 
 networks:
   laravel-net:
